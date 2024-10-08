@@ -1,11 +1,12 @@
-from unicodedata import category
 from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User, Product, Cart, Order, Wallet
-from .serializers import RegisterSerializer, ProductSerializer, CartSerializer, OrderSerializer, WalletSerializer
+from .serializers import (
+    RegisterSerializer, ProductSerializer, CartSerializer, OrderSerializer, WalletSerializer
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from decimal import Decimal
@@ -16,19 +17,24 @@ from datetime import datetime
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
+
+
 
 class AddProductView(generics.CreateAPIView):
     permission_classes = [IsAdminUser]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+
 class GetProductsView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = None
+
 
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
@@ -46,6 +52,7 @@ class AddToCartView(APIView):
 
         return Response({'message': 'Product added to cart'}, status=status.HTTP_200_OK)
 
+
 class GetOrderHistory(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -54,6 +61,7 @@ class GetOrderHistory(APIView):
         orders = Order.objects.filter(user=user)
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
+
 
 class AddFundsToWallet(APIView):
     permission_classes = [IsAuthenticated]
@@ -76,6 +84,7 @@ class AddFundsToWallet(APIView):
 
         return Response({"message": "Funds added", "current_balance": wallet.balance}, status=status.HTTP_200_OK)
 
+
 class WalletDetails(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -83,6 +92,7 @@ class WalletDetails(APIView):
         wallet, created = Wallet.objects.get_or_create(user=request.user)
         serializer = WalletSerializer(wallet)
         return Response(serializer.data)
+
 
 class BuyCartView(APIView):
     permission_classes = [IsAuthenticated]
@@ -124,6 +134,7 @@ class BuyCartView(APIView):
             "remaining_balance": wallet.balance
         }, status=status.HTTP_200_OK)
 
+
 class SalesReportByDateRange(APIView):
     permission_classes = [IsAdminUser]
 
@@ -137,7 +148,7 @@ class SalesReportByDateRange(APIView):
         from_date_raw = parse_date(from_date)
         to_date_raw = parse_date(to_date)
         from_date = make_aware(datetime.combine(from_date_raw, datetime.min.time()))
-        to_date = make_aware(datetime.combine(from_date_raw, datetime.max.time()))
+        to_date = make_aware(datetime.combine(to_date_raw, datetime.max.time()))
 
         sales_data = (
             Order.objects.filter(date_of_purchase__range=[from_date, to_date])
@@ -147,6 +158,7 @@ class SalesReportByDateRange(APIView):
         )
 
         return Response(sales_data, status=status.HTTP_200_OK)
+
 
 class SalesReportByBrand(APIView):
     permission_classes = [IsAdminUser]
@@ -172,10 +184,12 @@ class SalesReportByBrand(APIView):
 
         return Response(sales_data, status=status.HTTP_200_OK)
 
+
 class OrderHistoryPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
+
 
 class OrderHistoryView(ListAPIView):
     permission_classes = [IsAuthenticated]
@@ -185,15 +199,18 @@ class OrderHistoryView(ListAPIView):
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).order_by('-date_of_purchase')
 
+
 class ProductPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+
 class GetAllProductsView(ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = ProductPagination
+
 
 class GetProductsByCategoryView(ListAPIView):
     serializer_class = ProductSerializer
@@ -214,6 +231,7 @@ class GetProductsByCategoryView(ListAPIView):
             serializer = self.serializer_class(queryset, many=True)
 
         return Response(serializer.data)
+
 
 class GetProductByIdView(RetrieveAPIView):
     queryset = Product.objects.all()

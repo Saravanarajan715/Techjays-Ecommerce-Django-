@@ -1,11 +1,16 @@
 from rest_framework import serializers
-from .models import User, Product, Cart, Order, Wallet
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.models import User
+from .models import Product, Cart, Order, Wallet
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name', 'user_type']
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
@@ -26,17 +31,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
+
 class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ['product', 'quantity']
+
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['product', 'date_of_purchase']
 
-from .models import Wallet
 
 class WalletSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,13 +51,11 @@ class WalletSerializer(serializers.ModelSerializer):
         fields = ['user', 'balance']
         read_only_fields = ['user', 'balance']
 
-from rest_framework import serializers
-from .models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['name', 'category', 'price', 'description', 'no_of_stocks', 'brand','description']
+        fields = ['name', 'category', 'price', 'description', 'no_of_stocks', 'brand']
 
     def validate_price(self, value):
         if value <= 0:
@@ -61,4 +66,3 @@ class ProductSerializer(serializers.ModelSerializer):
         if value < 0:
             raise serializers.ValidationError("Number of stocks cannot be negative.")
         return value
-
