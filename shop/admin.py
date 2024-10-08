@@ -1,10 +1,9 @@
+"""
+Admin module for the shop application. This module registers models with
+the Django admin site to enable their management via the admin interface.
+"""
 from django.contrib import admin
-
-# Register your models here.
-
 from .models import User, Product, Order, Cart, Wallet
-
-
 admin.site.register(User)
 admin.site.register(Product)
 admin.site.register(Order)
